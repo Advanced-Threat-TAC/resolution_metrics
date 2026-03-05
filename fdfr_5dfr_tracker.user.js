@@ -3,7 +3,7 @@
 // @namespace    https://scripts.cisco.com/
 // @version      1.1
 // @description  FDFR/5DFR Checker for Quicker CSONE - Works on all cases (Open/Closed/Any Owner)
-// @author       CircuIT (Modified from JTAC Extensions)
+// @author       vivsing4 (Modified from JTAC Extensions via CircuIT)
 // @match        https://scripts.cisco.com/app/quicker_csone/*
 // @match        https://scripts.cisco.com/app/quicker_csone2/*
 // @match        https://bdb.cisco.com/app/quicker_csone/*
@@ -67,26 +67,41 @@
                 };
 
                 // Call the internal Cisco BDB Job
-                const res = await bdbApi["post"]("/api/v2/jobs/jtac_fr_checker", payload);
+                const res = await bdbApi["post"]("/api/v2/jobs/fdfr_5dfr_checker", payload);
                 const result = res.data.data.variables.result;
 
                 removeLoading("fr_check_loading");
 
                 if (!result) return;
 
-                // Determine color based on metrics
-                // Green = FDFR Met, Blue = 5DFR Met, Red = Inactive/Not Met, Black = Neutral/Unknown
-                let color = result.last_inactive_date ? "var(--color-red-8)" : "var(--color-black-8)";
-                if (result.five_day_final_resolution) {
-                    color = "var(--color-blue-8)";
-                }
-                if (result.one_day_final_resolution) {
-                    color = "var(--color-green-8)";
+                // Determine color based on Final_Solution_Time_days
+                // Green = FDFR Met (<=1 day)
+                // Blue = 5DFR Met (>1 and <=5 days)
+                // Red = Not Met (>5 days)
+                // Black = None/Unknown
+                const parsedDays = Number(result.Final_Solution_Time_days);
+                const finalSolutionDays = Number.isFinite(parsedDays)
+                    ? parsedDays
+                    : null;
+                let color = "var(--color-black-8)";
+                let statusText = "None";
+
+                if (finalSolutionDays !== null) {
+                    if (finalSolutionDays <= 1) {
+                        color = "var(--color-green-8)";
+                        statusText = "FDFR Met";
+                    } else if (finalSolutionDays <= 5) {
+                        color = "var(--color-blue-8)";
+                        statusText = "5DFR Met";
+                    } else {
+                        color = "var(--color-red-8)";
+                        statusText = "Not Met";
+                    }
                 }
 
                 const iconHtml = `
                     <div id="fr_check" style="margin-left: 10px; display: inline-block; vertical-align: middle;"
-                         title="FDFR/5DFR Checker\nGreen: FDFR Met\nBlue: 5DFR Met\nRed: Not Met\nBlack: Unknown\n(Click for details)">
+                         title="FDFR/5DFR Checker\nGreen: FDFR Met\nBlue: 5DFR Met\nRed: Not Met\nBlack: None\n(Click for details)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="${color}" viewBox="0 0 256 256" cursor="pointer" class="mds-icon-phosphor">
                             <path d="M232,128A104,104,0,1,1,128,24,104.13,104.13,0,0,1,232,128Z"></path>
                         </svg>
@@ -100,7 +115,7 @@
                 $("#fr_check").on("click", function (e) {
                     e.preventDefault();
                     console.log("FDFR/5DFR Detailed Data for " + srId + ":", result);
-                    alert(`FDFR/5DFR Status for ${srId}:\n\nFDFR Met: ${result.one_day_final_resolution ? "YES" : "NO"}\n5DFR Met: ${result.five_day_final_resolution ? "YES" : "NO"}\nLast Resolution: ${result.last_inactive_date || "N/A"}\n\nCheck browser console (F12) for full object.`);
+                    alert(`FDFR/5DFR Status for ${srId}:\n\nStatus: ${statusText}\nFinal Solution Days: ${finalSolutionDays ?? "None"}\nRaw Final_Solution_Time_days: ${result.Final_Solution_Time_days ?? "None"}\n\nCheck browser console (F12) for full object.`);
                 });
 
             } catch (error) {
