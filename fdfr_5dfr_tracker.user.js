@@ -79,7 +79,13 @@
                 // Blue = 5DFR Met (>1 and <=5 days)
                 // Red = Not Met (>5 days)
                 // Black = None/Unknown
-                const parsedDays = Number(result.Final_Solution_Time_days);
+                const rawDays = result.Final_Solution_Time_days;
+                const hasDaysValue = !(
+                    rawDays === null
+                    || rawDays === undefined
+                    || rawDays === ""
+                );
+                const parsedDays = hasDaysValue ? Number(rawDays) : NaN;
                 const finalSolutionDays = Number.isFinite(parsedDays)
                     ? parsedDays
                     : null;
