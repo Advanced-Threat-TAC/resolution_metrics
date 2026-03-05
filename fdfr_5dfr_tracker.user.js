@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CSONE FDFR/5DFR Checker - All Cases
 // @namespace    https://scripts.cisco.com/
-// @version      1.1
+// @version      1.2
 // @description  FDFR/5DFR Checker for Quicker CSONE - Works on all cases (Open/Closed/Any Owner)
 // @author       vivsing4 (Modified from JTAC Extensions via CircuIT)
 // @match        https://scripts.cisco.com/app/quicker_csone/*
@@ -66,10 +66,18 @@
         return cssNode;
     };
 
+    const getFallbackAnchor = () => {
+        return document.querySelector(CONFIG.srFallbackSelector);
+    };
+
+    const getInsertionAnchor = () => {
+        return getTargetAnchor() || getFallbackAnchor();
+    };
+
     const getSr = () => {
-        const targetAnchor = getTargetAnchor();
-        if (targetAnchor) {
-            return $(targetAnchor).text().trim();
+        const insertionAnchor = getInsertionAnchor();
+        if (insertionAnchor) {
+            return $(insertionAnchor).text().trim();
         }
         return $(CONFIG.srFallbackSelector).first().text().trim();
     };
@@ -95,12 +103,12 @@
         const srId = getSr();
         if (!srId) return;
 
-        const targetAnchor = getTargetAnchor();
-        if (!targetAnchor) return;
+        const insertionAnchor = getInsertionAnchor();
+        if (!insertionAnchor) return;
 
         (async () => {
             try {
-                addLoading(targetAnchor, "fr_check_loading");
+                addLoading(insertionAnchor, "fr_check_loading");
 
                 const payload = {
                     input: {
@@ -109,7 +117,10 @@
                 };
 
                 // Call the internal Cisco BDB Job
-                const res = await bdbApi["post"]("/api/v2/jobs/fdfr_5dfr_checker", payload);
+                const res = await bdbApi["post"](
+                    "/api/v2/jobs/fdfr_5dfr_checker",
+                    payload
+                );
                 const result = res.data.data.variables.result;
 
                 removeLoading("fr_check_loading");
@@ -156,7 +167,7 @@
                     </div>`;
 
                 if ($("#fr_check").length === 0) {
-                    $(targetAnchor).after(iconHtml);
+                    $(insertionAnchor).after(iconHtml);
                 }
 
                 // Interaction for details
@@ -174,7 +185,10 @@
     };
 
     // --- Initialization ---
-    // Wait for the requested SR link target to load
-    waitForKeyElements(CONFIG.targetLinkSelector, addFrCheckerIcon);
+    // Wait for either the requested target link or fallback SR link
+    waitForKeyElements(
+        `${CONFIG.targetLinkSelector}, ${CONFIG.srFallbackSelector}`,
+        addFrCheckerIcon
+    );
 
 })();
