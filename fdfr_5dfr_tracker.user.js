@@ -100,7 +100,7 @@
                 $("#fr_check").on("click", function (e) {
                     e.preventDefault();
                     console.log("FDFR/5DFR Detailed Data for " + srId + ":", result);
-                    alert(`FDFR/5DFR Status for ${srId}:\n\nFDFR Met: ${result.one_day_final_resolution ? "YES" : "NO"}\n5DFR Met: ${result.five_day_final_resolution ? "YES" : "NO"}\nLast Inactive: ${result.last_inactive_date || "N/A"}\n\nCheck browser console (F12) for full object.`);
+                    alert(`FDFR/5DFR Status for ${srId}:\n\nFDFR Met: ${result.one_day_final_resolution ? "YES" : "NO"}\n5DFR Met: ${result.five_day_final_resolution ? "YES" : "NO"}\nLast Resolution: ${result.last_inactive_date || "N/A"}\n\nCheck browser console (F12) for full object.`);
                 });
 
             } catch (error) {
