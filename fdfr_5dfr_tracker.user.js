@@ -18,6 +18,14 @@
 (function() {
     'use strict';
 
+    const CONFIG = {
+        targetLinkXPath:
+            "/html/body/div[1]/div/div[3]/div/section[2]/div/div[1]/a",
+        targetLinkSelector:
+            "body > div:nth-child(1) > div > div:nth-child(3) > div > section:nth-child(2) > div > div:nth-child(1) > a",
+        srFallbackSelector: "#sr-header > div > div > a",
+    };
+
     // AXIOS Configuration for Cisco BDB API
     const bdbApi = axios.create({
         withCredentials: true,
@@ -29,8 +37,41 @@
 
     // --- Helper Functions ---
 
+    const getElementByXPath = (xpath) => {
+        const result = document.evaluate(
+            xpath,
+            document,
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null
+        );
+        return result.singleNodeValue;
+    };
+
+    const getTargetAnchor = () => {
+        const xpathNode = getElementByXPath(CONFIG.targetLinkXPath);
+        if (xpathNode) {
+            return xpathNode;
+        }
+        const cssNode = document.querySelector(CONFIG.targetLinkSelector);
+        if (!cssNode) {
+            console.warn(
+                "[FR Checker] Target anchor not found using XPath or CSS selector.",
+                {
+                    xpath: CONFIG.targetLinkXPath,
+                    selector: CONFIG.targetLinkSelector,
+                }
+            );
+        }
+        return cssNode;
+    };
+
     const getSr = () => {
-        return $("#sr-header > div > div > a").first().text();
+        const targetAnchor = getTargetAnchor();
+        if (targetAnchor) {
+            return $(targetAnchor).text().trim();
+        }
+        return $(CONFIG.srFallbackSelector).first().text().trim();
     };
 
     const addLoading = (elem, id) => {
@@ -54,11 +95,12 @@
         const srId = getSr();
         if (!srId) return;
 
+        const targetAnchor = getTargetAnchor();
+        if (!targetAnchor) return;
+
         (async () => {
             try {
-                // Anchor to the SR number link container
-                const anchor = $("#sr-header > div > div").first();
-                addLoading(anchor, "fr_check_loading");
+                addLoading(targetAnchor, "fr_check_loading");
 
                 const payload = {
                     input: {
@@ -114,7 +156,7 @@
                     </div>`;
 
                 if ($("#fr_check").length === 0) {
-                    anchor.append(iconHtml);
+                    $(targetAnchor).after(iconHtml);
                 }
 
                 // Interaction for details
@@ -132,8 +174,7 @@
     };
 
     // --- Initialization ---
-
-    // Wait for the Quicker CSONE header container to load
-    waitForKeyElements("#sr-header > div", addFrCheckerIcon);
+    // Wait for the requested SR link target to load
+    waitForKeyElements(CONFIG.targetLinkSelector, addFrCheckerIcon);
 
 })();
