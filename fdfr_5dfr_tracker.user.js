@@ -121,7 +121,7 @@
                 $("#fr_check").on("click", function (e) {
                     e.preventDefault();
                     console.log("FDFR/5DFR Detailed Data for " + srId + ":", result);
-                    alert(`FDFR/5DFR Status for ${srId}:\n\nStatus: ${statusText}\nFinal Solution Days: ${finalSolutionDays ?? "None"}\nRaw Final_Solution_Time_days: ${result.Final_Solution_Time_days ?? "None"}\n\nCheck browser console (F12) for full object.`);
+                    alert(`FDFR/5DFR Status for ${srId}:\n\nStatus: ${statusText}\nFinal Solution Days: ${finalSolutionDays ?? "None"}\nInitial_Solution_Time_days: ${result.Initial_Solution_Time_days ?? "None"}\n\nCheck browser console (F12) for full object.`);
                 });
 
             } catch (error) {
