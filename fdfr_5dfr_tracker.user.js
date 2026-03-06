@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CSONE FDFR/5DFR Checker - All Cases
 // @namespace    https://scripts.cisco.com/
-// @version      1.2
+// @version      1.3
 // @description  FDFR/5DFR Checker for Quicker CSONE - Works on all cases (Open/Closed/Any Owner)
 // @author       vivsing4 (Modified from JTAC Extensions via CircuIT)
 // @match        https://scripts.cisco.com/app/quicker_csone/*
@@ -143,7 +143,7 @@
                     ? parsedDays
                     : null;
                 let color = "var(--color-black-8)";
-                let statusText = "None";
+                let statusText = "Not Set";
 
                 if (finalSolutionDays !== null) {
                     if (finalSolutionDays <= 1) {
@@ -160,7 +160,7 @@
 
                 const iconHtml = `
                     <div id="fr_check" style="margin-left: 10px; display: inline-block; vertical-align: middle;"
-                         title="FDFR/5DFR Checker\nGreen: FDFR Met\nBlue: 5DFR Met\nRed: Not Met\nBlack: None\n(Click for details)">
+                         title="FDFR/5DFR Checker\nGreen: FDFR Met\nBlue: 5DFR Met\nRed: Not Met\nBlack: Not Set\n(Click for details)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="${color}" viewBox="0 0 256 256" cursor="pointer" class="mds-icon-phosphor">
                             <path d="M232,128A104,104,0,1,1,128,24,104.13,104.13,0,0,1,232,128Z"></path>
                         </svg>
